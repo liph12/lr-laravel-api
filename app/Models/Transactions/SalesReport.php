@@ -5,15 +5,24 @@ namespace App\Models\Transactions;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\Entities\Developer;
+use App\Models\Property\Project;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SalesReport extends Model
 {
     protected $table = "salesreport";
 
-    public function scopeGroupByDeveloperSales($q)
+    public function scopeGroupByDeveloperSales(Builder $query): Builder
     {
-        return $q->selectRaw("SUM(tcprice) as totalSales, devid")
+        return $query->selectRaw("SUM(tcprice) as totalSales, devid")
             ->developer()->groupBy("devid")->orderByDesc("totalSales");
+    }
+
+    public function scopeGroupByPropertyTypeSales(Builder $query): Builder
+    {
+        return $query->selectRaw("SUM(salesreport.tcprice) as totalSales, salesreport.projid, projects.prop_type_id")
+        ->leftJoin('projects', 'projects.id', 'salesreport.projid')->valid()
+        ->groupBy("salesreport.projid")->orderByDesc("totalSales");
     }
 
     public function scopeDeveloper(Builder $query): Builder
@@ -28,8 +37,8 @@ class SalesReport extends Model
     public function scopeValid(Builder $query): Builder
     {
         return $query->where([
-            ['validSale', 'Yes'],
-            ['status', '!=', 'Cancelled']
+            ['salesreport.validSale', 'Yes'],
+            ['salesreport.status', '!=', 'Cancelled']
         ]);
     }
 
@@ -39,7 +48,12 @@ class SalesReport extends Model
             ->whereRaw("STR_TO_DATE(reservationdate, '%m/%d/%Y') <= '" . $to . "'");
     }
 
-    public function developer()
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class, 'projid');
+    }
+
+    public function developer(): BelongsTo
     {
         return $this->belongsTo(Developer::class, 'devid');
     }
