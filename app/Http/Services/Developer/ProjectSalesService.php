@@ -16,6 +16,6 @@ class ProjectSalesService implements SalesReportInterface
     public function reportsByArea(array $filters): Collection
     {
         return SalesReport::reservationDate($filters['dateFrom'], $filters['dateTo'])
-        ->with('project.type')->whereHas('project')->groupByPropertyTypeSales()->limit(10)->get();
+            ->with('project.type')->whereHas('project')->groupByPropertyTypeSales()->limit(10)->get();
     }
 }

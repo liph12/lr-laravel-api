@@ -21,16 +21,16 @@ class SalesReport extends Model
     public function scopeGroupByPropertyTypeSales(Builder $query): Builder
     {
         return $query->selectRaw("SUM(salesreport.tcprice) as totalSales, salesreport.projid, projects.prop_type_id")
-        ->leftJoin('projects', 'projects.id', 'salesreport.projid')->valid()
-        ->groupBy("salesreport.projid")->orderByDesc("totalSales");
+            ->leftJoin('projects', 'projects.id', 'salesreport.projid')->valid()
+            ->groupBy("salesreport.projid")->orderByDesc("totalSales");
     }
 
     public function scopeDeveloper(Builder $query): Builder
     {
         return $query->valid()->where([
-            ['developer', 'NOT LIKE', '%Brokerage%'],
-            ['developer', 'NOT LIKE', '%Rental%'],
-            ['devid', '!=', 0]
+            ['salesreport.developer', 'NOT LIKE', '%Brokerage%'],
+            ['salesreport.developer', 'NOT LIKE', '%Rental%'],
+            ['salesreport.devid', '!=', 0]
         ]);
     }
 
